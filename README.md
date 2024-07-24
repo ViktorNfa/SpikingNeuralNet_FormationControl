@@ -1,7 +1,7 @@
 # SpikingNeuralNet_FormationControl
 This repository holds the code for a Spiking Neural Network (SNN) using Norse to learn a time-varying Formation Controller (FC) for Multi-Agent Systems (MAS).
 
-Dependencies:
+## Dependencies:
 To install all the required packages you can create a virtual environment (venv, conda...) and execute: 
 ```
 pip install -r requirements.txt
