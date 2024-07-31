@@ -11,6 +11,8 @@ import pandas as pd
 from matplotlib import pyplot as plt
 from matplotlib import animation
 from tqdm import tqdm
+import pickle as pkl
+import os
 
 #plt.style.use("seaborn-whitegrid")
 
@@ -135,6 +137,7 @@ alpha = 1
 # Time size
 max_time_size = max_T*freq
 
+## For neighbor list 1
 # Get the number of neighbours for each robot
 number_neighbours = []
 # Create edge list
@@ -151,6 +154,21 @@ for i in range(number_robots):
         L_G[i, j-1] = -1
         if (i+1,j) not in edges and (j,i+1) not in edges:
             edges.append((i+1,j))
+
+## For neighbor list 2
+# Get the number of neighbours for each robot
+number_neighbours2 = []
+# Create edge list
+edges2 = []
+# Create Laplacian matrix for the graph
+L_G2 = np.zeros((number_robots,number_robots))
+for i in range(number_robots):
+    number_neighbours2.append(len(neighbours2[i]))
+    L_G2[i, i] = number_neighbours2[i]
+    for j in neighbours2[i]:
+        L_G2[i, j-1] = -1
+        if (i+1,j) not in edges2 and (j,i+1) not in edges2:
+            edges2.append((i+1,j))
 
 # Edges for a fully connected network
 edges_fc = []
@@ -196,7 +214,7 @@ for t in tqdm(range(max_time_size-1)):
     if secs < 10:
         u_n = formationController(L_G, x[:,t], x_d1)
     elif secs >= 10 and secs < 20:
-        u_n = formationController(L_G, x[:,t], x_d2)
+        u_n = formationController(L_G2, x[:,t], x_d2)
     else:
         u_n = formationController(L_G, x[:,t], x_d1)
 
@@ -294,6 +312,10 @@ for i in range(len(edges)):
     aux_i = edges[i][0]-1
     aux_j = edges[i][1]-1
     shapes.append(plt.Line2D((x[2*aux_i,0], x[2*aux_j,0]), (x[2*aux_i+1,0], x[2*aux_j+1,0]), lw=0.5, color='b', alpha=0.3))
+for i in range(len(edges2)):
+    aux_i = edges2[i][0]-1
+    aux_j = edges2[i][1]-1
+    shapes.append(plt.Line2D((x[2*aux_i,0], x[2*aux_j,0]), (x[2*aux_i+1,0], x[2*aux_j+1,0]), lw=0.5, color='b', alpha=0.3))
 
 def init():
     for i in range(number_robots):
@@ -306,6 +328,12 @@ def init():
         shapes[number_robots+i].set_xdata((x[2*aux_i,0], x[2*aux_j,0]))
         shapes[number_robots+i].set_ydata((x[2*aux_i+1,0], x[2*aux_j+1,0]))
         ax.add_line(shapes[number_robots+i])
+    for i in range(len(edges2)):
+        aux_i = edges2[i][0]-1
+        aux_j = edges2[i][1]-1
+        shapes[number_robots+len(edges)+i].set_xdata((0, 0))
+        shapes[number_robots+len(edges)+i].set_ydata((0, 0))
+        ax.add_line(shapes[number_robots+len(edges)+i])
 
     time_txt.set_text('T=0.0 s')
 
@@ -313,16 +341,45 @@ def init():
 
 def animate(frame):
 
+    secs = frame/freq
+
     for i in range(number_robots):
         shapes[i].center = (x[2*i,frame], x[2*i+1,frame])
 
-    for i in range(len(edges)):
-        aux_i = edges[i][0]-1
-        aux_j = edges[i][1]-1
-        shapes[number_robots+i].set_xdata((x[2*aux_i,frame], x[2*aux_j,frame]))
-        shapes[number_robots+i].set_ydata((x[2*aux_i+1,frame], x[2*aux_j+1,frame]))
+    if secs < 10:
+        for i in range(len(edges)):
+            aux_i = edges[i][0]-1
+            aux_j = edges[i][1]-1
+            shapes[number_robots+i].set_xdata((x[2*aux_i,frame], x[2*aux_j,frame]))
+            shapes[number_robots+i].set_ydata((x[2*aux_i+1,frame], x[2*aux_j+1,frame]))
+        for i in range(len(edges2)):
+            aux_i = edges2[i][0]-1
+            aux_j = edges2[i][1]-1
+            shapes[number_robots+len(edges)+i].set_xdata((0, 0))
+            shapes[number_robots+len(edges)+i].set_ydata((0, 0))
+    elif secs >= 10 and secs < 20:
+        for i in range(len(edges)):
+            aux_i = edges[i][0]-1
+            aux_j = edges[i][1]-1
+            shapes[number_robots+i].set_xdata((0, 0))
+            shapes[number_robots+i].set_ydata((0, 0))
+        for i in range(len(edges2)):
+            aux_i = edges2[i][0]-1
+            aux_j = edges2[i][1]-1
+            shapes[number_robots+len(edges)+i].set_xdata((x[2*aux_i,frame], x[2*aux_j,frame]))
+            shapes[number_robots+len(edges)+i].set_ydata((x[2*aux_i+1,frame], x[2*aux_j+1,frame]))
+    else:
+        for i in range(len(edges)):
+            aux_i = edges[i][0]-1
+            aux_j = edges[i][1]-1
+            shapes[number_robots+i].set_xdata((x[2*aux_i,frame], x[2*aux_j,frame]))
+            shapes[number_robots+i].set_ydata((x[2*aux_i+1,frame], x[2*aux_j+1,frame]))
+        for i in range(len(edges2)):
+            aux_i = edges2[i][0]-1
+            aux_j = edges2[i][1]-1
+            shapes[number_robots+len(edges)+i].set_xdata((0, 0))
+            shapes[number_robots+len(edges)+i].set_ydata((0, 0))
 
-    secs = frame/freq
     time_txt.set_text('T=%.1d s' % secs)
 
     return shapes + [time_txt,]
@@ -339,3 +396,16 @@ plt.show()
 #anim.save('animation.mp4', fps=50, extra_args=['-vcodec', 'libx264'])
 
 print("Completed!")
+
+
+### ------------------------------------------------------------------------------------------------------------ ###
+## Visualize CBF conditions/plots & trajectories
+
+print("Saving dataset...")
+
+# directory of the dataset 
+dataset_dir = "dataset"
+os.makedirs(dataset_dir,exist_ok=True)
+
+with open(dataset_dir + "/dataset.pkl", 'wb') as f:
+    pkl.dump(dataset, f)
