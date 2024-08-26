@@ -59,7 +59,7 @@ class Network(torch.nn.Module):
         
         # Third convolutional layer
         self.linear = torch.nn.Linear(in_features=10, out_features=2)
-        
+
     def forward(self, inputs):
         outputs = []
         if len(inputs.shape) == 2: # to deal with a batch
@@ -127,8 +127,8 @@ criterion = loss_fn
 optimizer = torch.optim.Adam(network.parameters(), lr=0.002)
 
 # Training loop with early stopping
-num_epochs = 200
-patience = 10
+num_epochs = 1500
+patience = 15
 best_loss = float('inf')
 epochs_no_improve = 0
 

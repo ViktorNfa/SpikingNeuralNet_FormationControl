@@ -13,7 +13,7 @@ pip install -r requirements.txt
 - [x] Program classical formation controller using my master thesis code. Save data to train SNN.
 - [x] Create a SNN for formation control and train and test accordingly.
 - [ ] Create simulator using Gazebo, ROS2 and Rosie robotic models.
-- [ ] Simulate both classical and SNN FC. Record and upload video to my YouTube and write a short 1 page report.
+- [ ] Simulate both classical and SNN FC. Record and upload video to my YouTube and write a short report.
 
 ## Summary
 

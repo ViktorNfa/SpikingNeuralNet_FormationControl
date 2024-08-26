@@ -61,6 +61,7 @@ def prepare_dataset(number_robots, x, u, max_time_size, freq, x_d1, x_d2):
 # Number of simulations
 num_sims  = 1
 
+
 # Dimensionality of the problem
 dim = 2
 
@@ -158,7 +159,8 @@ counter = 0
 for i in tqdm(range(num_sims)):
     x, u, _, _ = fc.execute_fc_simulation(number_robots, dim, max_time_size, x_max, freq, L_G, L_G2, x_d1, x_d2, oa, d_oa, edges_fc, alpha)
 
-    dataset_per_agent = prepare_dataset(number_robots, x, u, max_time_size-1, freq, x_d1, x_d2)
+    shortcut = 10*freq
+    dataset_per_agent = prepare_dataset(number_robots, x[:,:shortcut], u[:,:shortcut], shortcut-1, freq, x_d1, x_d2)
     
     # saving the numpy arrays in folder 
     for data in dataset_per_agent.values():

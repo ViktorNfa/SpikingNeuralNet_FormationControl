@@ -11,6 +11,7 @@ import pandas as pd
 from matplotlib import pyplot as plt
 from matplotlib import animation
 from tqdm import tqdm
+import torch
 
 #plt.style.use("seaborn-whitegrid")
 
@@ -117,6 +118,77 @@ def execute_fc_simulation(number_robots, dim, max_time_size, x_max, freq, L_G, L
             u_n = formationController(L_G, x[:,t], x_d1)
 
         u, b_oa = cbfController(x[:,t], u_n, oa, d_oa, number_robots, edges_fc, dim, alpha)
+
+        # Update the system using dynamics
+        xdot = systemDynamics(x[:,t], u)
+        x[:,t+1] = xdot*(1/freq) + x[:,t]
+
+        # Save CBF functions
+        for e in range(len(edges_fc)):
+            aux_i = edges_fc[e][0]-1
+            aux_j = edges_fc[e][1]-1
+            x_i = np.array([x[2*aux_i,t],x[2*aux_i+1,t]])
+            x_j = np.array([x[2*aux_j,t],x[2*aux_j+1,t]])
+            cbf_oa[e,t] = cbf_h(x_i, x_j, d_oa, -1)
+        
+        # Save Final controller
+        controller[:,t] = u
+
+        # Save Nominal controller
+        nom_controller[:,t] = u_n
+
+    return x, controller, cbf_oa, nom_controller
+
+def execute_snnfc_simulation(number_robots, dim, max_time_size, x_max, freq, L_G, L_G2, x_d1, x_d2, oa, d_oa, edges_fc, alpha, network, snn_agent):
+    
+    # Setup cbf function init output
+    cbf_oa = np.zeros((len(edges_fc),max_time_size-1))
+    # Setup controller output init output
+    controller = np.zeros((number_robots*dim,max_time_size-1))
+    nom_controller = np.zeros((number_robots*dim,max_time_size-1))
+
+    # Initialize position matrix
+    x = np.zeros((number_robots*dim,max_time_size))
+
+    # Randomize initial position within a random circle
+    radius = x_max  # Assuming x_max == y_max
+    for i in range(number_robots):
+        r = radius * np.sqrt(np.random.rand())  # Random radius
+        theta = 2 * np.pi * np.random.rand()  # Random angle
+        x[i, 0] = r * np.cos(theta)
+        x[i, 1] = r * np.sin(theta)
+
+    # Start simulation loop
+    for t in range(max_time_size-1):
+        secs = t/freq
+        
+        # Compute nominal controller - Time Varying
+        if secs < 10:
+            u_n = formationController(L_G, x[:,t], x_d1)
+        elif secs >= 10 and secs < 20:
+            u_n = formationController(L_G2, x[:,t], x_d2)
+        else:
+            u_n = formationController(L_G, x[:,t], x_d1)
+
+        u, b_oa = cbfController(x[:,t], u_n, oa, d_oa, number_robots, edges_fc, dim, alpha)
+
+        # Utilize SNN for snn_agent
+        input_data = []
+        for j in range(number_robots):
+            if snn_agent != j:
+                input_data += [x[2*snn_agent,t] - x[2*j,t], x[2*snn_agent+1,t] - x[2*j+1,t],]
+            
+        if secs < 10:
+            input_data += [x_d1[2*i]-x[2*snn_agent,t], x_d1[2*i+1]-x[2*snn_agent+1,t]]
+        elif secs >= 10 and secs < 20:
+            input_data += [x_d2[2*i]-x[2*snn_agent,t], x_d2[2*i+1]-x[2*snn_agent+1,t]]
+        else:
+            input_data += [x_d1[2*i]-x[2*snn_agent,t], x_d1[2*i+1]-x[2*snn_agent+1,t]]
+        
+        input = torch.tensor(input_data).float()
+        input = input.unsqueeze(0)  # Adding a dimension for batch size
+
+        u[2*snn_agent], u[2*snn_agent+1] = network(input).detach()
 
         # Update the system using dynamics
         xdot = systemDynamics(x[:,t], u)
