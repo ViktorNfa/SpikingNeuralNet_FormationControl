@@ -44,7 +44,7 @@ def main(args=None):
     rclpy.init(args=args)
 
     # Load simulation data
-    file_path = '~/ros2_ws/src/snn_formation_control/dataset/simulation.pkl'
+    file_path = '../../../dataset/simulation.pkl'
     simulation_data = load_simulation_data(file_path)
 
     # Create nodes for each agent (assuming 5 agents)
