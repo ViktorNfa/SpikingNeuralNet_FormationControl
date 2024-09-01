@@ -24,55 +24,90 @@ n_time_points = features[0].shape[1]
 
 # Define the Network class
 class Network(torch.nn.Module):
-    def __init__(self):
+    def __init__(self, train_mode: bool):
         super(Network, self).__init__()
         
+        
         time_constant1 = torch.nn.Parameter(torch.tensor([200.]))
-        time_constant2 = torch.nn.Parameter(torch.tensor([100.]))
-        time_constant3 = torch.nn.Parameter(torch.tensor([50.]))
+        time_constant2 = torch.nn.Parameter(torch.tensor([300.]))
+        time_constant3 = torch.nn.Parameter(torch.tensor([600.]))
         
         voltage1 = torch.nn.Parameter(torch.tensor([0.006]))
-        voltage2 = torch.nn.Parameter(torch.tensor([0.08]))
-        voltage3 = torch.nn.Parameter(torch.tensor([0.13]))
+        voltage2 = torch.nn.Parameter(torch.tensor([0.008]))
+        voltage3 = torch.nn.Parameter(torch.tensor([0.013]))
+
 
         # Define three different neuron layers with varying temporal dynamics
         lif_params_1 = norse.torch.LIFBoxParameters(tau_mem_inv= time_constant1 ,v_th = voltage1 )
         lif_params_2 = norse.torch.LIFBoxParameters(tau_mem_inv= time_constant2 ,v_th = voltage2 )
         lif_params_3 = norse.torch.LIFBoxParameters(tau_mem_inv= time_constant3 ,v_th = voltage3 )
         
-        # to make it a for loop
-        self.temporal_layer_1 = norse.torch.Lift(norse.torch.LIFBoxCell(p=lif_params_1))
-        self.temporal_layer_2 = norse.torch.Lift(norse.torch.LIFBoxCell(p=lif_params_2))
-        self.temporal_layer_3 = norse.torch.Lift(norse.torch.LIFBoxCell(p=lif_params_3))
+        self.temporal_layer_1 = norse.torch.LIFBoxCell(p=lif_params_1)
+        self.temporal_layer_2 = norse.torch.LIFBoxCell(p=lif_params_2)
+        self.temporal_layer_3 = norse.torch.LIFBoxCell(p=lif_params_3)
         
-        self.temporal_layer_1.register_parameter("time_constant", time_constant1)
-        self.temporal_layer_1.register_parameter("voltage", voltage1)
+        # lifting
+        self.temporal_layer_1_lifted = norse.torch.Lift(self.temporal_layer_1)
+        self.temporal_layer_2_lifted = norse.torch.Lift(self.temporal_layer_2)
+        self.temporal_layer_3_lifted = norse.torch.Lift(self.temporal_layer_3)
+            
         
-        self.temporal_layer_2.register_parameter("time_constant", time_constant2)
-        self.temporal_layer_2.register_parameter("voltage", voltage2)
+        self.temporal_layer_1.register_parameter("time_constant",time_constant1)
+        self.temporal_layer_1.register_parameter("voltage",voltage1)
         
-        self.temporal_layer_3.register_parameter("time_constant", time_constant3)
-        self.temporal_layer_3.register_parameter("voltage", voltage3)
+        self.temporal_layer_2.register_parameter("time_constant",time_constant2)
+        self.temporal_layer_2.register_parameter("voltage",voltage2)
+        
+        self.temporal_layer_3.register_parameter("time_constant",time_constant3)
+        self.temporal_layer_3.register_parameter("voltage",voltage3)
     
+        
+        
         # First convolutional layer
         self.conv1 = torch.nn.Conv2d(in_channels=3, out_channels=1, kernel_size=(1, 1), stride=(1, 1), padding=(0, 0))
         
         # Third convolutional layer
-        self.linear = torch.nn.Linear(in_features=10, out_features=2)
-
-    def forward(self, inputs):
-        outputs = []
-        if len(inputs.shape) == 2: # to deal with a batch
-            inputs = inputs.unsqueeze(0)
+        self.linear = torch.nn.Linear(in_features=10,out_features=2)
         
-        state_1 = None
-        state_2 = None
-        state_3 = None
-
+        self.train_mode = train_mode
+        self.state_1 = None
+        self.state_2 = None
+        self.state_3 = None
+        
+    def forward(self, inputs:torch.Tensor):
+        
+        
+        outputs = []
+        if inputs.ndim == 2: # to deal with a batch
+            inputs = inputs.unsqueeze(0)
+        if inputs.ndim == 1: 
+            inputs = inputs.unsqueeze(0)
+            inputs = inputs.unsqueeze(2)
+        
         for input in inputs:
-            response_1, state_1 = self.temporal_layer_1(input) # change here the state
-            response_2, state_2 = self.temporal_layer_2(input)
-            response_3, state_3 = self.temporal_layer_3(input)
+            input = torch.transpose(input, 0, 1) #[time,state]
+            
+            if self.train_mode:
+                response_1,_ = self.temporal_layer_1_lifted(input) 
+                response_2,_ = self.temporal_layer_2_lifted(input)
+                response_3,_ = self.temporal_layer_3_lifted(input)
+            
+            else : # update current state
+                
+                if self.state_1 == None:
+                    response_1,self.state_1 = self.temporal_layer_1_lifted(input)
+                    response_2,self.state_2 = self.temporal_layer_2_lifted(input)
+                    response_3,self.state_3 = self.temporal_layer_3_lifted(input)
+                else :
+                    response_1,self.state_1 = self.temporal_layer_1(input,self.state_1)
+                    response_2,self.state_2 = self.temporal_layer_2(input,self.state_2)
+                    response_3,self.state_3 = self.temporal_layer_3(input,self.state_3)
+                
+            
+            response_1 = torch.transpose(response_1,0,1)
+            response_2 = torch.transpose(response_2,0,1)
+            response_3 = torch.transpose(response_3,0,1)
+            
             output = torch.stack([response_1, response_2, response_3], dim=0)
             output = self.conv1(output)
             output = torch.transpose(output, 1, 2)
@@ -122,7 +157,7 @@ def loss_fn(predicted_optimal_inputs, computed_optimal_inputs):
 ### ------------------------------------------------------------------------------------------------------------ ###
 ## Train and test network
 
-network = Network()
+network = Network(train_mode=True)
 criterion = loss_fn
 optimizer = torch.optim.Adam(network.parameters(), lr=0.002)
 

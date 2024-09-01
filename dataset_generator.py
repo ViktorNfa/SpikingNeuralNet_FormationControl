@@ -1,4 +1,4 @@
-import formation_control as fc
+import ros2_ws.src.formation_control as fc
 import numpy as np
 from tqdm import tqdm
 import pickle as pkl
@@ -157,7 +157,7 @@ x_d2 = np.reshape(formation_positions2,number_robots*dim)
 dataset = {}
 counter = 0
 for i in tqdm(range(num_sims)):
-    x, u, _, _ = fc.execute_fc_simulation(number_robots, dim, max_time_size, x_max, freq, L_G, L_G2, x_d1, x_d2, oa, d_oa, edges_fc, alpha)
+    x, u, _, _ = fc.execute_fc_simulation(number_robots, dim, max_time_size, x_max, freq, L_G, L_G2, x_d1, x_d2, oa, d_oa, edges_fc, alpha, True)
 
     shortcut = 10*freq
     dataset_per_agent = prepare_dataset(number_robots, x[:,:shortcut], u[:,:shortcut], shortcut-1, freq, x_d1, x_d2)

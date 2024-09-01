@@ -86,7 +86,7 @@ def systemDynamics(p, u):
 ### ------------------------------------------------------------------------------------------------------------ ###
 ## Simulation and visualization loop
 
-def execute_fc_simulation(number_robots, dim, max_time_size, x_max, freq, L_G, L_G2, x_d1, x_d2, oa, d_oa, edges_fc, alpha):
+def execute_fc_simulation(number_robots, dim, max_time_size, x_max, freq, L_G, L_G2, x_d1, x_d2, oa, d_oa, edges_fc, alpha, deploy=False):
     
     # Setup cbf function init output
     cbf_oa = np.zeros((len(edges_fc),max_time_size-1))
@@ -96,14 +96,16 @@ def execute_fc_simulation(number_robots, dim, max_time_size, x_max, freq, L_G, L
 
     # Initialize position matrix
     x = np.zeros((number_robots*dim,max_time_size))
-
-    # Randomize initial position within a random circle
-    radius = x_max  # Assuming x_max == y_max
-    for i in range(number_robots):
-        r = radius * np.sqrt(np.random.rand())  # Random radius
-        theta = 2 * np.pi * np.random.rand()  # Random angle
-        x[i, 0] = r * np.cos(theta)
-        x[i, 1] = r * np.sin(theta)
+    if deploy:
+        x[:,0] = [-(x_max-5), (x_max-5), 0, 0, -(x_max-5), -(x_max-5), (x_max-5), (x_max-5), (x_max-5), -(x_max-5)]
+    else:
+        # Randomize initial position within a random circle
+        radius = x_max  # Assuming x_max == y_max
+        for i in range(number_robots):
+            r = radius * np.sqrt(np.random.rand())  # Random radius
+            theta = 2 * np.pi * np.random.rand()  # Random angle
+            x[i, 0] = r * np.cos(theta)
+            x[i, 1] = r * np.sin(theta)
 
     # Start simulation loop
     for t in range(max_time_size-1):
@@ -139,7 +141,7 @@ def execute_fc_simulation(number_robots, dim, max_time_size, x_max, freq, L_G, L
 
     return x, controller, cbf_oa, nom_controller
 
-def execute_snnfc_simulation(number_robots, dim, max_time_size, x_max, freq, L_G, L_G2, x_d1, x_d2, oa, d_oa, edges_fc, alpha, network, snn_agent):
+def execute_snnfc_simulation(number_robots, dim, max_time_size, x_max, freq, L_G, L_G2, x_d1, x_d2, oa, d_oa, edges_fc, alpha, network, snn_agent, deploy=False):
     
     # Setup cbf function init output
     cbf_oa = np.zeros((len(edges_fc),max_time_size-1))
@@ -149,14 +151,16 @@ def execute_snnfc_simulation(number_robots, dim, max_time_size, x_max, freq, L_G
 
     # Initialize position matrix
     x = np.zeros((number_robots*dim,max_time_size))
-
-    # Randomize initial position within a random circle
-    radius = x_max  # Assuming x_max == y_max
-    for i in range(number_robots):
-        r = radius * np.sqrt(np.random.rand())  # Random radius
-        theta = 2 * np.pi * np.random.rand()  # Random angle
-        x[i, 0] = r * np.cos(theta)
-        x[i, 1] = r * np.sin(theta)
+    if deploy:
+        x[:,0] = [-(x_max-5), (x_max-5), 0, 0, -(x_max-5), -(x_max-5), (x_max-5), (x_max-5), (x_max-5), -(x_max-5)]
+    else:
+        # Randomize initial position within a random circle
+        radius = x_max  # Assuming x_max == y_max
+        for i in range(number_robots):
+            r = radius * np.sqrt(np.random.rand())  # Random radius
+            theta = 2 * np.pi * np.random.rand()  # Random angle
+            x[i, 0] = r * np.cos(theta)
+            x[i, 1] = r * np.sin(theta)
 
     # Start simulation loop
     for t in range(max_time_size-1):
@@ -179,11 +183,11 @@ def execute_snnfc_simulation(number_robots, dim, max_time_size, x_max, freq, L_G
                 input_data += [x[2*snn_agent,t] - x[2*j,t], x[2*snn_agent+1,t] - x[2*j+1,t],]
             
         if secs < 10:
-            input_data += [x_d1[2*i]-x[2*snn_agent,t], x_d1[2*i+1]-x[2*snn_agent+1,t]]
+            input_data += [x_d1[2*snn_agent]-x[2*snn_agent,t], x_d1[2*snn_agent+1]-x[2*snn_agent+1,t]]
         elif secs >= 10 and secs < 20:
-            input_data += [x_d2[2*i]-x[2*snn_agent,t], x_d2[2*i+1]-x[2*snn_agent+1,t]]
+            input_data += [x_d2[2*snn_agent]-x[2*snn_agent,t], x_d2[2*snn_agent+1]-x[2*snn_agent+1,t]]
         else:
-            input_data += [x_d1[2*i]-x[2*snn_agent,t], x_d1[2*i+1]-x[2*snn_agent+1,t]]
+            input_data += [x_d1[2*snn_agent]-x[2*snn_agent,t], x_d1[2*snn_agent+1]-x[2*snn_agent+1,t]]
         
         input = torch.tensor(input_data).float()
         input = input.unsqueeze(0)  # Adding a dimension for batch size
