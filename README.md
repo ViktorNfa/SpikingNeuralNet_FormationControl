@@ -79,11 +79,11 @@ Below are visual demonstrations of the formation control in action. These videos
 
 - Classical Formation Control:
 
-![Original algorithm animation](learnt_fc_control.mp4)
+![Original algorithm animation](learnt_fc_control.gif)
 
 - SNN-based Formation Control:
 
-![Learnt algorithm animation](original_fc_control.mp4)
+![Learnt algorithm animation](original_fc_control.gif)
 
 ### Collision Avoidance Comparison
 
