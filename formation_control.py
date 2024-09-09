@@ -7,7 +7,6 @@
 
 import numpy as np
 from scipy.optimize import minimize, LinearConstraint
-import pandas as pd
 from matplotlib import pyplot as plt
 from matplotlib import animation
 from tqdm import tqdm

@@ -1,1 +1,0 @@
-/home/notan/Github/SpikingNeuralNet_FormationControl/ros2_ws/build/snn_formation_control/launch/turtlebot_formation_control.launch.py

@@ -1,4 +1,4 @@
-import ros2_ws.src.formation_control as fc
+import formation_control as fc
 import numpy as np
 import pickle as pkl
 import os

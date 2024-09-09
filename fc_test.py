@@ -1,4 +1,4 @@
-import ros2_ws.src.formation_control as fc
+import formation_control as fc
 import numpy as np
 
 
@@ -105,3 +105,6 @@ fc.print_plots(edges_fc, max_time_size, freq, cbf_oa, edges_col, u, nom_controll
 
 # Play video
 fc.play_video(winx, winy, r_robot, number_robots, edges, edges2, x, max_time_size, freq, save=False)
+
+# Save video
+fc.play_video(winx, winy, r_robot, number_robots, edges, edges2, x, max_time_size, freq, save=True)
