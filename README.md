@@ -1,22 +1,18 @@
-# Spiking Neural Network for Formation Control in Multi-Agent Systems
+# Spiking Neural Network for time-varying Formation Control in multi-agent systems
 
-This repository contains code to implement a Spiking Neural Network (SNN) for solving a formation control problem in Multi-Agent Systems (MAS) using Norse. The SNN is trained to approximate a classical time-varying formation control algorithm while ensuring collision avoidance.
+This repository contains code to implement a Spiking Neural Network (SNN) for solving a time-varying formation control problem in multi-agent systems (MAS) using Norse. The SNN is trained to approximate and/or replicate a classical time-varying formation control algorithm while ensuring collision avoidance.
 
 ## What are Spiking Neural Networks (SNNs)?
 
 Spiking Neural Networks (SNNs) are a type of artificial neural network that more closely mimic biological neurons compared to traditional neural networks. In SNNs, neurons communicate through discrete spikes or pulses, much like how biological neurons do in the brain. This temporally-rich communication method introduces a notion of time and allows SNNs to process temporal sequences more efficiently.
 
-In this project, we utilize SNNs to learn and replicate classical formation control techniques, providing a neuro-inspired approach to solving control problems.
-
 ## What is Formation Control?
 
 Formation control refers to the coordination strategy used in multi-agent systems (such as drones, robots, or autonomous vehicles) to maintain a desired formation during motion. The objective is to move multiple agents while ensuring they maintain certain relative positions to each other. This type of control is commonly used in applications such as robotics, autonomous vehicles, and swarm intelligence.
 
-The goal of this project is to compare a traditional formation control algorithm with a learned formation controller using an SNN.
-
 ## What are Control Barrier Functions (CBFs)?
 
-Control Barrier Functions (CBFs) are mathematical tools used to enforce safety constraints, such as collision avoidance in control systems. They ensure that agents in a multi-agent system avoid collisions with each other or obstacles by restricting certain unsafe control actions. In this project, CBFs are used alongside both the classical and SNN-based controllers to ensure collision-free movement of the agents.
+Control Barrier Functions (CBFs) are mathematical tools used to enforce safety constraints, such as collision avoidance in control systems. They ensure that agents in a multi-agent system avoid collisions with each other or obstacles by restricting certain unsafe control actions. In this project, CBFs are used only for the classical controllers to ensure collision-free movement of the agents, while we let the SNN-based controller learn the CBFs collision-free behaviour.
 
 ## Project Overview
 
@@ -87,7 +83,7 @@ Below are visual demonstrations of the formation control in action. These videos
 
 ### Collision Avoidance Comparison
 
-Below are visual representations of the effectiveness of collision avoidance strategies in both the classical and SNN-based control systems:
+Below are visual representations of the effectiveness of collision avoidance strategies in both the classical and SNN-based control systems (note that if the graph goes below zero the safety condition has not been fulfilled and a collision is likely to occur):
 
 - Classical CBF Collision Avoidance:
 
@@ -137,5 +133,5 @@ This project is licensed under the [LICENSE](LICENSE).
 
 ## Acknowledgments
 
-This project was inspired by research into neuro-inspired computation and multi-agent systems, particularly those solving engineering problems such as formation control and collision avoidance.
+This project was inspired by research into neuro-inspired computation and multi-agent systems, particularly by what was learnt in the PhD course *FDD3558 Solving Engineering Problems with Neural-inspired Computation* at KTH Royal Institute of Technology.
 
