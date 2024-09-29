@@ -95,6 +95,24 @@ Below are visual representations of the effectiveness of collision avoidance str
 
 The graphs show the effectiveness of Control Barrier Functions in maintaining safe distances between agents. Notably the learnt agent can keep the safe condition with respect to the rest of the network.
 
+## Discussion
+The comparative analysis of the classical and SNN-based controllers gives us several key takeaways:
+
+### Benefits of using SNN
+There are three main benefits that come from the use of SNNs as opposed to the classical formation controller algorithms:
+- Biological plausibility: SNNs emulate neuronal spiking behavior, providing a framework that is closer to biological neural processing. This could lead to more natural and efficient control strategies.
+- Temporal processing: SNNs inherently handle temporal information, which can be advantageous in dynamic environments where timing is crucial.
+- Energy efficiency: due to their event-driven nature, SNNs have the potential for lower power consumption, making them suitable for embedded systems and IoT devices, as opposed to the conventional formation controller. However, this depends on the advancement of neuromorphic processors and hardware, and how their performance compares to alternative CPU-based architectures.
+
+### Drawbacks and challenges
+The main drawback observed was the training complexity since SNNs require specialized training algorithms, such as surrogate gradient methods, which can be more complex and computationally intensive compared to traditional neural networks. Another important factor is the slight performance degradation shown by the minor increase in formation error and convergence time of the SNN controller, although more fine-tuning of the network parameters could be done to close this performance gap. Lastly, scalability might also be an issue since extending the SNN controller to handle a significantly larger number of agents may present challenges in terms of network size and training time.
+
+### Interpretation of results
+The SNN-based controller effectively learns the formation control task, achieving performance metrics close to the classical controller, and the absence of collision incidents suggests that the SNN successfully internalized the collision avoidance behavior without explicit CBF implementation. Furthermore, the slightly higher convergence time indicates that while the SNN approximates the classical controller well, there is room for optimization, possibly through deeper network architectures or additional training.
+
+### Conclusion
+This project demonstrates the viability of using Spiking Neural Networks for formation control in multi-agent systems. While the classical controller remains superior in terms of convergence speed, efficiency and theoretical guarentees, the SNN offers several advantages that could be beneficial in specific applications, especially when energy efficiency is prioritized. Future work should focus on optimizing the SNN architecture and training process to further enhance performance and to extend it to more diverse settings.
+
 ## Usage Instructions
 
 - Classical Formation Control: run the classical formation control simulation with the following command:
